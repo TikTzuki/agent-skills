@@ -37,3 +37,6 @@ private/
 target/
 build/
 .gradle/
+
+.DS_Store
+*/.DS_Store
