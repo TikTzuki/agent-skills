@@ -31,9 +31,6 @@ personal/
 private/
 .dmux/
 
-# Claude Code local state
-.claude/
-
 # Java
 *.class
 *.jar
