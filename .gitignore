@@ -31,6 +31,9 @@ personal/
 private/
 .dmux/
 
+# Skill eval workspaces (generated during testing, not part of the plugin)
+skills/*-workspace/
+
 # Claude Code local state (sessions only — CLAUDE.md, rules/, WORKING_WORKFLOW.md are committed)
 .claude/sessions/
 
