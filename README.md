@@ -45,18 +45,18 @@ From your **project's root directory**, open Claude Code and run:
 /setup
 ```
 
-**What `/setup` installs into your project:**
+**What `/setup` installs into your project** (all under `.claude/`):
 
 | File/Dir | Auto-loaded by Claude | Contains |
 |---|---|---|
-| `CLAUDE.md` | ✅ Every session for this project | Tech stack, 7-phase workflow, critical rules |
-| `WORKING_WORKFLOW.md` | When read from CLAUDE.md | Full 7-phase workflow reference (1055 lines) |
+| `.claude/CLAUDE.md` | ✅ Every session for this project | Tech stack, 7-phase workflow, critical rules |
+| `.claude/WORKING_WORKFLOW.md` | When referenced from CLAUDE.md | Full 7-phase workflow reference (1055 lines) |
 | `.claude/rules/` | ✅ Every session for this project | Coding style, reactive, security, testing rules |
 
 **Commit and share with your team:**
 
 ```bash
-git add CLAUDE.md WORKING_WORKFLOW.md .claude/rules/
+git add .claude/CLAUDE.md .claude/WORKING_WORKFLOW.md .claude/rules/
 git commit -m "chore: add Claude Code project context"
 ```
 
@@ -148,18 +148,18 @@ From the **project root**, open Claude Code and run:
 /setup
 ```
 
-This copies `CLAUDE.md`, `WORKING_WORKFLOW.md`, and `.claude/rules/` into the project.
+This installs `CLAUDE.md`, `WORKING_WORKFLOW.md`, and `rules/` under `.claude/`.
 **Commit these files** so every teammate gets the context on clone — no manual setup needed for them:
 
 ```bash
-git add CLAUDE.md WORKING_WORKFLOW.md .claude/rules/
+git add .claude/CLAUDE.md .claude/WORKING_WORKFLOW.md .claude/rules/
 git commit -m "chore: add Claude Code project context"
 ```
 
 Verify it worked:
 ```bash
-test -f CLAUDE.md           && echo "✅ CLAUDE.md"
-test -f WORKING_WORKFLOW.md && echo "✅ WORKING_WORKFLOW.md"
+test -f .claude/CLAUDE.md           && echo "✅ CLAUDE.md"
+test -f .claude/WORKING_WORKFLOW.md && echo "✅ WORKING_WORKFLOW.md"
 ls .claude/rules/ 2>/dev/null | head -3 && echo "✅ Rules"
 ```
 

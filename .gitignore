@@ -31,6 +31,9 @@ personal/
 private/
 .dmux/
 
+# Claude Code local state (sessions only — CLAUDE.md, rules/, WORKING_WORKFLOW.md are committed)
+.claude/sessions/
+
 # Java
 *.class
 *.jar

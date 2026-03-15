@@ -3,9 +3,9 @@
 # setup.sh — Install devco-agent-skills into a project (or globally)
 # =============================================================================
 #
-# Default (project scope):
-#   1. Injects plugin CLAUDE.md into PROJECT_ROOT/CLAUDE.md  (markers, idempotent)
-#   2. Copies WORKING_WORKFLOW.md  →  PROJECT_ROOT/WORKING_WORKFLOW.md
+# Default (project scope) — everything under PROJECT_ROOT/.claude/:
+#   1. Injects plugin CLAUDE.md    →  PROJECT_ROOT/.claude/CLAUDE.md   (markers, idempotent)
+#   2. Copies WORKING_WORKFLOW.md  →  PROJECT_ROOT/.claude/WORKING_WORKFLOW.md
 #   3. Copies rules/               →  PROJECT_ROOT/.claude/rules/
 #
 # Optional --global:
@@ -13,7 +13,7 @@
 #      → auto-loads in every session on this machine
 #
 # Usage:
-#   bash scripts/setup.sh              # Project setup (CLAUDE.md + workflow + rules)
+#   bash scripts/setup.sh              # Project setup (.claude/CLAUDE.md + workflow + rules)
 #   bash scripts/setup.sh --global     # Also write to ~/.claude/CLAUDE.md
 #   bash scripts/setup.sh --update     # Refresh (idempotent re-run)
 #
@@ -106,30 +106,33 @@ fi
 if [ "$SKIP_PROJECT" = "false" ]; then
   h "Project scope: $PROJECT_ROOT"
 
-  # 1a. CLAUDE.md
-  PROJECT_CLAUDE_MD="$PROJECT_ROOT/CLAUDE.md"
+  CLAUDE_DIR="$PROJECT_ROOT/.claude"
+  mkdir -p "$CLAUDE_DIR"
+
+  # 1a. .claude/CLAUDE.md
+  PROJECT_CLAUDE_MD="$CLAUDE_DIR/CLAUDE.md"
   if [ -f "$PROJECT_CLAUDE_MD" ]; then
-    info "Existing CLAUDE.md found — injecting plugin rules with markers"
+    info "Existing .claude/CLAUDE.md found — injecting plugin rules with markers"
     lines="$(inject_plugin_content "$PROJECT_CLAUDE_MD" "$PLUGIN_DIR/CLAUDE.md")"
-    ok "Plugin rules injected into CLAUDE.md ($lines lines) — auto-loads for this project"
+    ok "Plugin rules injected into .claude/CLAUDE.md ($lines lines) — auto-loads for this project"
   else
     cp "$PLUGIN_DIR/CLAUDE.md" "$PROJECT_CLAUDE_MD"
-    ok "CLAUDE.md created at project root — auto-loads for this project"
+    ok ".claude/CLAUDE.md created — auto-loads for this project"
   fi
 
-  # 1b. WORKING_WORKFLOW.md
+  # 1b. .claude/WORKING_WORKFLOW.md
   WORKFLOW_SRC="$PLUGIN_DIR/WORKING_WORKFLOW.md"
-  WORKFLOW_DST="$PROJECT_ROOT/WORKING_WORKFLOW.md"
+  WORKFLOW_DST="$CLAUDE_DIR/WORKING_WORKFLOW.md"
   if [ -f "$WORKFLOW_SRC" ]; then
     cp "$WORKFLOW_SRC" "$WORKFLOW_DST"
-    ok "WORKING_WORKFLOW.md copied → $WORKFLOW_DST"
+    ok ".claude/WORKING_WORKFLOW.md copied ($WORKFLOW_DST)"
   else
     warn "WORKING_WORKFLOW.md not found in plugin dir — skipped"
   fi
 
-  # 1c. rules/ → .claude/rules/
+  # 1c. .claude/rules/
   RULES_SRC="$PLUGIN_DIR/rules"
-  RULES_DST="$PROJECT_ROOT/.claude/rules"
+  RULES_DST="$CLAUDE_DIR/rules"
 
   if [ -d "$RULES_SRC" ]; then
     mkdir -p "$RULES_DST"
@@ -141,7 +144,7 @@ if [ "$SKIP_PROJECT" = "false" ]; then
     done
     rule_count="$(find "$RULES_DST" -name "*.md" | wc -l | tr -d ' ')"
     ok "$rule_count rule files installed → $RULES_DST"
-    info "Commit .claude/ to version control to share rules with your team."
+    info "Commit .claude/ to version control to share with your team."
   fi
 fi
 
@@ -173,18 +176,18 @@ fi
 
 h "Done"
 echo ""
-echo "  Installed at project scope:"
-echo "    CLAUDE.md               — loaded by Claude for this project"
-echo "    WORKING_WORKFLOW.md     — 7-phase workflow reference"
-echo "    .claude/rules/          — coding rules for this project"
+echo "  Installed at project scope (all under .claude/):"
+echo "    .claude/CLAUDE.md           — loaded by Claude for this project"
+echo "    .claude/WORKING_WORKFLOW.md — 7-phase workflow reference"
+echo "    .claude/rules/              — coding rules for this project"
 if [ "$WITH_GLOBAL" = "true" ]; then
   echo ""
   echo "  Also installed globally:"
-  echo "    ~/.claude/CLAUDE.md   — loaded in every session on this machine"
+  echo "    ~/.claude/CLAUDE.md       — loaded in every session on this machine"
 fi
 echo ""
 echo "  Add to version control to share with your team:"
-echo "    git add CLAUDE.md WORKING_WORKFLOW.md .claude/rules/"
+echo "    git add .claude/CLAUDE.md .claude/WORKING_WORKFLOW.md .claude/rules/"
 echo "    git commit -m 'chore: add Claude Code project context'"
 echo ""
 echo "  To refresh after a plugin update:"
