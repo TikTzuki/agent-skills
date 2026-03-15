@@ -166,33 +166,35 @@ com.example.{service}/
 ## Available Resources
 
 ### Skills (`skills/`)
-| Skill | Purpose |
-|-------|---------|
-| `api-design` | RESTful and reactive API design — URL conventions, error handling, pagination |
-| `blackbox-test` | JSON-driven black box integration tests |
-| `continuous-learning-v2` | Instinct-based learning with confidence scoring |
-| `database-migrations` | Zero-downtime migrations — Flyway, expand-contract, Testcontainers validation |
-| `grpc-patterns` | gRPC service patterns — protobuf, streaming, error handling |
-| `hexagonal-arch` | Hexagonal architecture patterns |
-| `java-patterns` | Java 17+ best practices |
-| `java-standards` | Java 17+ coding standards — KISS/DRY/SOLID, records, sealed classes, naming, Optional, Streams |
-| `jpa-patterns` | JPA/Hibernate — entity design, N+1 prevention, HikariCP, pagination |
-| `kafka-patterns` | Kafka producer/consumer, exactly-once, reactive Kafka, DLT |
-| `mysql-patterns` | MySQL optimization, indexing, JPA best practices, connection pooling |
-| `observability-patterns` | Micrometer, distributed tracing, structured logging, alerting |
-| `postgres-patterns` | PostgreSQL optimization, indexing, RLS |
-| `project-guidelines` | Reads project-root `PROJECT_GUIDELINES.md` |
-| `rabbitmq-patterns` | RabbitMQ exchanges, queues, DLQ, Spring AMQP patterns |
-| `redis-patterns` | Redis caching, distributed locks, rate limiting |
-| `security-review` | OWASP Top 10, secrets, auth |
-| `solution-design` | Architecture documentation |
-| `spring-mvc-patterns` | Spring MVC patterns — controllers, exception handlers, validation |
-| `spring-webflux-patterns` | Spring WebFlux reactive patterns — Mono/Flux chains, backpressure, WebClient |
-| `springboot-patterns` | REST controllers, pagination, caching, async, rate limiting, production defaults |
-| `springboot-security` | JWT filter, SecurityFilterChain, CORS, secrets management, OWASP scanning |
-| `strategic-compact` | Context-efficient `/compact` suggestions |
-| `tdd-workflow` | Write-tests-first TDD enforcement |
-| `verification` | Verification pipeline — compile, test, coverage, security, static analysis, diff review |
+
+| Skill                     | Purpose                                                                                        |
+|---------------------------|------------------------------------------------------------------------------------------------|
+| `api-design`              | RESTful and reactive API design — URL conventions, error handling, pagination                  |
+| `blackbox-test`           | JSON-driven black box integration tests                                                        |
+| `continuous-learning-v2`  | Instinct-based learning with confidence scoring                                                |
+| `database-migrations`     | Zero-downtime migrations — Flyway, expand-contract, Testcontainers validation                  |
+| `grpc-patterns`           | gRPC service patterns — protobuf, streaming, error handling                                    |
+| `hexagonal-arch`          | Hexagonal architecture patterns                                                                |
+| `java-patterns`           | Java 17+ best practices                                                                        |
+| `java-standards`          | Java 17+ coding standards — KISS/DRY/SOLID, records, sealed classes, naming, Optional, Streams |
+| `jpa-patterns`            | JPA/Hibernate — entity design, N+1 prevention, HikariCP, pagination                            |
+| `kafka-patterns`          | Kafka producer/consumer, exactly-once, reactive Kafka, DLT                                     |
+| `mysql-patterns`          | MySQL optimization, indexing, JPA best practices, connection pooling                           |
+| `observability-patterns`  | Micrometer, distributed tracing, structured logging, alerting                                  |
+| `postgres-patterns`       | PostgreSQL optimization, indexing, RLS                                                         |
+| `project-guidelines`      | Reads project-root `PROJECT_GUIDELINES.md`                                                     |
+| `rabbitmq-patterns`       | RabbitMQ exchanges, queues, DLQ, Spring AMQP patterns                                          |
+| `redis-patterns`          | Redis caching, distributed locks, rate limiting                                                |
+| `security-review`         | OWASP Top 10, secrets, auth                                                                    |
+| `solution-design`         | Architecture documentation                                                                     |
+| `spring-mvc-patterns`     | Spring MVC patterns — controllers, exception handlers, validation                              |
+| `spring-webflux-patterns` | Spring WebFlux reactive patterns — Mono/Flux chains, backpressure, WebClient                   |
+| `springboot-patterns`     | REST controllers, pagination, caching, async, rate limiting, production defaults               |
+| `springboot-security`     | JWT filter, SecurityFilterChain, CORS, secrets management, OWASP scanning                      |
+| `strategic-compact`       | Context-efficient `/compact` suggestions                                                       |
+| `tdd-workflow`            | Write-tests-first TDD enforcement                                                              |
+| `verification`            | Verification pipeline — compile, test, coverage, security, static analysis, diff review        |
+| `summer`                  | Summer Framework (io.f8a.summer) — reactive Spring Boot library for microservices              |
 
 ### Agents (`agents/`)
 | Agent | Purpose |
