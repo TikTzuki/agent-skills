@@ -1,6 +1,7 @@
 ---
 name: spec
 description: Generate behavioral spec from approved plan — define observable contracts before implementation. Gate between PLAN and BUILD phases.
+agent: spec-writer
 triggers:
   - /spec
 tools:
@@ -287,6 +288,19 @@ Spec Scenarios → Test Cases:
 ```
 
 This feeds directly into the BUILD phase TDD cycle.
+
+## Task Decomposition
+
+After spec approval, decompose into ordered atomic tasks:
+
+| # | Task | Files | Test Method | Depends On |
+|---|------|-------|-------------|------------|
+| 1 | Create DTO record | CreateOrderRequest.java | — | — |
+| 2 | Write repository method | OrderRepository.java | shouldFindByIdWhenExists() | 1 |
+| 3 | Implement use case | CreateOrderUseCase.java | shouldCreateOrderWhenValid() | 1,2 |
+| 4 | Add controller endpoint | OrderController.java | shouldReturn201WhenCreated() | 3 |
+
+Each task is independently testable. BUILD phase processes tasks in order.
 
 ## Approval Protocol
 

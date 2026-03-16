@@ -28,6 +28,14 @@ git diff --name-only HEAD -- '*.java' '*.yml' '*.yaml' '*.gradle'
 - `.subscribe()` inside reactive pipelines (fire-and-forget)
 - Missing error handling (no `onErrorResume`/`onErrorMap`)
 
+**Performance Issues (HIGH):**
+
+- N+1 query patterns (findAll in loops, missing @EntityGraph)
+- Missing connection pool configuration
+- Unbounded collections without pagination
+- Missing caching for repeated expensive calls
+- Missing timeouts on WebClient/external service calls
+
 **Code Quality (HIGH):**
 
 - Methods > 50 lines

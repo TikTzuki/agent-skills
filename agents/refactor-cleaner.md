@@ -129,23 +129,28 @@ dependencies {
 ## [YYYY-MM-DD] Refactor Session
 
 ### Unused Dependencies Removed
+
 - commons-lang3:3.12.0 - Last used: never
 - guava:31.0 - Replaced by: Java 17 features
 
 ### Unused Classes Deleted
+
 - src/main/java/.../OldOrderService.java - Replaced by: OrderService.java
 - src/main/java/.../DeprecatedUtil.java - Functionality moved to: Utils.java
 
 ### Unused Methods Removed
+
 - OrderService.legacyProcess() - No references
 - UserService.oldValidate() - Replaced by validate()
 
 ### Impact
+
 - Files deleted: 15
 - Dependencies removed: 5
 - Lines of code removed: 2,300
 
 ### Testing
+
 - All unit tests passing: ✓
 - All integration tests passing: ✓
 ```

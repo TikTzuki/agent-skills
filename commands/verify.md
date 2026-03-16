@@ -7,6 +7,7 @@ Run verification on current Java/Spring codebase. Supports multiple modes.
 ```
 /verify              → defaults to "full"
 /verify quick        → build + compile only
+/verify pre-commit   → build + compile + tests + debug audit
 /verify full         → build + compile + lint + tests + security + debug audit
 /verify gate         → full + all reviewers + coverage gate + PR readiness check
 ```
@@ -26,6 +27,22 @@ Run verification on current Java/Spring codebase. Supports multiple modes.
    ./mvnw compile test-compile -q         # Maven
    ```
    If either fails → STOP and report errors with file:line.
+
+### Mode: `pre-commit`
+
+All `quick` steps plus:
+
+3. **Test Suite**
+   ```bash
+   ./gradlew test        # Gradle
+   ./mvnw test -q        # Maven
+   ```
+   Report: pass/fail count.
+
+4. **Debug Statement Audit**
+   ```bash
+   grep -rn --include="*.java" "System\.out\.\|System\.err\.\|\.printStackTrace()" src/main/ | head -10
+   ```
 
 ### Mode: `full` (default)
 
@@ -108,7 +125,7 @@ All `full` steps plus:
 ```
 VERIFICATION REPORT
 ===================
-Mode: [quick|full|gate]
+Mode: [quick|pre-commit|full|gate]
 Branch: {branch}  Commit: {short SHA}
 
 Build:      [PASS/FAIL]

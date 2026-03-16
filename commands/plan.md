@@ -37,57 +37,57 @@ The planner agent will:
 ## Example Usage
 
 ```
-User: /plan I need to add real-time notifications when markets resolve
+User: /plan Add order notification when payment is processed
 
 Agent (planner):
-# Implementation Plan: Real-Time Market Resolution Notifications
+# Implementation Plan: Order Notification on Payment Processed
 
 ## Requirements Restatement
-- Send notifications to users when markets they're watching resolve
-- Support multiple notification channels (in-app, email, webhook)
-- Ensure notifications are delivered reliably
-- Include market outcome and user's position result
+- Publish a domain event when payment is processed for an order
+- Persist notifications to PostgreSQL via R2DBC
+- Expose GET /api/notifications/{userId} with pagination
+- Consume payment events from Kafka reactively
 
 ## Implementation Phases
 
-### Phase 1: Database Schema
-- Add notifications table with columns: id, user_id, market_id, type, status, created_at
-- Add user_notification_preferences table for channel preferences
-- Create indexes on user_id and market_id for performance
+### Phase 1: Domain Events
+- Create `PaymentProcessedEvent` record in `src/main/java/com/example/order/domain/event/`
+- Create `OrderNotification` entity in `src/main/java/com/example/notification/domain/`
+- Define `NotificationRepository` port (interface) in domain layer
 
 ### Phase 2: Notification Service
-- Create notification service in lib/notifications.ts
-- Implement notification queue using BullMQ/Redis
-- Add retry logic for failed deliveries
-- Create notification templates
+- Create `NotificationService` in `src/main/java/com/example/notification/application/`
+- Implement reactive Kafka consumer (`@KafkaListener`) in infrastructure layer
+- Implement `R2dbcNotificationRepository` adapter in `src/main/java/com/example/notification/infrastructure/`
+- Wire R2DBC schema migration via Flyway (`V2__create_notifications.sql`)
 
-### Phase 3: Integration Points
-- Hook into market resolution logic (when status changes to "resolved")
-- Query all users with positions in market
-- Enqueue notifications for each user
+### Phase 3: REST Endpoint
+- Create `NotificationController` in `src/main/java/com/example/notification/interfaces/`
+- Implement `GET /api/notifications/{userId}` returning `Flux<NotificationDto>` with pagination
+- Add `@Valid` request parameter validation and structured error responses
 
-### Phase 4: Frontend Components
-- Create NotificationBell component in header
-- Add NotificationList modal
-- Implement real-time updates via Supabase subscriptions
-- Add notification preferences page
+### Phase 4: Integration Tests
+- Testcontainers setup: PostgreSQL + Kafka in `src/test/java/com/example/notification/`
+- `NotificationServiceIntegrationTest` using `StepVerifier`
+- Contract test for `GET /api/notifications/{userId}` with `WebTestClient`
 
 ## Dependencies
-- Redis (for queue)
-- Email service (SendGrid/Resend)
-- Supabase real-time subscriptions
+- Spring Kafka (reactive consumer)
+- R2DBC PostgreSQL driver
+- Flyway for schema migration
+- Testcontainers (PostgreSQL + Kafka)
 
 ## Risks
-- HIGH: Email deliverability (SPF/DKIM required)
-- MEDIUM: Performance with 1000+ users per market
-- MEDIUM: Notification spam if markets resolve frequently
-- LOW: Real-time subscription overhead
+- HIGH: Kafka consumer offset management — ensure idempotent processing with deduplication key
+- MEDIUM: R2DBC connection pool sizing — tune `spring.r2dbc.pool.max-size` under load
+- MEDIUM: Notification backlog if consumer falls behind — configure DLT and monitoring
+- LOW: Pagination cursor design for high-volume users
 
 ## Estimated Complexity: MEDIUM
-- Backend: 4-6 hours
-- Frontend: 3-4 hours
-- Testing: 2-3 hours
-- Total: 9-13 hours
+- Domain + infrastructure: 3-4 hours
+- REST endpoint: 1-2 hours
+- Integration tests: 2-3 hours
+- Total: 6-9 hours
 
 **WAITING FOR CONFIRMATION**: Proceed with this plan? (yes/no/modify)
 ```
@@ -107,11 +107,6 @@ If you want changes, respond with:
 
 After planning:
 
-- Use `/tdd` to implement with test-driven development
-- Use `/build-and-fix` if build errors occur
+- Run `/spec` to define behavioral contracts before writing code
+- Use `/build-fix` if build errors occur
 - Use `/code-review` to review completed implementation
-
-## Related Agents
-
-This command invokes the `planner` agent located at:
-`~/.claude/agents/planner.md`
