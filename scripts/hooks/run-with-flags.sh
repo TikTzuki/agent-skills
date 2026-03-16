@@ -11,7 +11,7 @@
 #   source "$(dirname "$0")/run-with-flags.sh" "hook-name" || exit 0
 #
 # Environment:
-#   HOOK_PROFILE  — minimal | standard (default) | strict
+#   HOOK_PROFILE  — minimal | standard | strict (default)
 #
 # Profiles:
 #   minimal:  session-start, session-end, cost-tracker
@@ -31,7 +31,7 @@ if [ -z "${CLAUDE_PLUGIN_ROOT:-}" ]; then
 fi
 
 _HOOK_NAME="${1:-}"
-_HOOK_PROFILE="${HOOK_PROFILE:-standard}"
+_HOOK_PROFILE="${HOOK_PROFILE:-strict}"
 
 # Define which hooks are enabled per profile
 case "$_HOOK_PROFILE" in
