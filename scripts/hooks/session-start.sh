@@ -269,93 +269,64 @@ if [ -f "BLOCKERS.md" ]; then
 fi
 
 # ---------------------------------------------------------------------------
-# 6. Workflow reminder — stdout so Claude reads it as session context
+# 6. Context injection — tiered retrieval + workflow reminder
 # ---------------------------------------------------------------------------
 
-# NOTE: stdout → injected into Claude's context window.
-#       stderr → terminal only (the `log` helper above uses stderr).
+# Build context string for injection
+CONTEXT=""
 
-{
-  echo "## Session Boot — devco-agent-skills"
-  echo ""
-
-  # Stack context (when detected)
-  if [ -n "$SPRING_TYPE" ]; then
-    echo "**Stack**: Java ${JAVA_VERSION:-17+} · Spring Boot 3.x · $SPRING_TYPE"
-    echo ""
+# --- Structured memory context (tiered retrieval, ~750 tokens max) ---
+READ_CONTEXT="$(dirname "$0")/../memory/read-context.sh"
+if [ -x "$READ_CONTEXT" ]; then
+  MEMORY_CONTEXT="$(bash "$READ_CONTEXT" 2>/dev/null || true)"
+  if [ -n "$MEMORY_CONTEXT" ]; then
+    CONTEXT="## Memory Context\n\n${MEMORY_CONTEXT}\n\n"
   fi
+fi
 
-  # Project guidelines reminder
-  if [ -f "PROJECT_GUIDELINES.md" ]; then
-    echo "**Project guidelines**: \`PROJECT_GUIDELINES.md\` present — read it before starting work."
-    echo ""
+# --- Stack context ---
+if [ -n "$SPRING_TYPE" ]; then
+  CONTEXT="${CONTEXT}**Stack**: Java ${JAVA_VERSION:-17+} · Spring Boot 3.x · $SPRING_TYPE\n\n"
+fi
+
+# --- Project guidelines ---
+if [ -f "PROJECT_GUIDELINES.md" ]; then
+  CONTEXT="${CONTEXT}**Project guidelines**: \`PROJECT_GUIDELINES.md\` present — read it before starting work.\n\n"
+fi
+
+# --- Workflow reminder (compact) ---
+CONTEXT="${CONTEXT}## Workflow\n\n"
+CONTEXT="${CONTEXT}**Trivial** (≤5 lines, 1 file, no new behavior) → BUILD directly\n"
+CONTEXT="${CONTEXT}**Non-trivial** → \`/plan\` → confirm → \`/spec\` → approve → BUILD (TDD: RED→GREEN→REFACTOR)\n\n"
+CONTEXT="${CONTEXT}**Hard blocks**: No code without /plan+/spec approval · Tests first · No .block() in src/main/ · No git commit\n\n"
+CONTEXT="${CONTEXT}**Commands**: /plan → /spec → /verify → /code-review → /build-fix → /checkpoint → /compact\n\n"
+
+# --- Knowledge graph hint ---
+GRAPH_FILE=".claude/memory/knowledge-graph.jsonl"
+if [ -f "$GRAPH_FILE" ]; then
+  GRAPH_LINES="$(wc -l < "$GRAPH_FILE" 2>/dev/null | tr -d ' ')"
+  if [ "$GRAPH_LINES" -gt 0 ]; then
+    CONTEXT="${CONTEXT}**Knowledge graph**: ${GRAPH_LINES} entries — use \`mcp__memory__search_nodes\` to query.\n\n"
   fi
+fi
 
-  # Phase decision — most important thing Claude needs to decide what to do next
-  echo "### Workflow Phase Decision"
-  echo ""
-  echo "Before touching any code, answer: **Is this task trivial?**"
-  echo ""
-  echo "| Trivial (ALL must be true) | Non-trivial (ANY is true) |"
-  echo "|----------------------------|---------------------------|"
-  echo "| Change ≤ 5 lines | Change > 5 lines |"
-  echo "| Single file only | Multiple files |"
-  echo "| No new behavior | New behavior / feature |"
-  echo "| No architectural impact | Schema / dependency / arch change |"
-  echo ""
-  echo "**Trivial** → go straight to BUILD"
-  echo "**Non-trivial** → \`/plan\` → user confirms → \`/spec\` → user approves → BUILD"
-  echo ""
+# --- Setup warning ---
+if [ ! -f ".claude/CLAUDE.md" ] && ! grep -q "devco-agent-skills:start" "$HOME/.claude/CLAUDE.md" 2>/dev/null; then
+  CONTEXT="${CONTEXT}> ⚠️  Plugin rules not installed: Run \`/setup\` to initialize project context.\n"
+fi
 
-  # Hard blocks reminder
-  echo "### Hard Blocks (non-negotiable)"
-  echo ""
-  echo "- No code without \`/plan\` approval (non-trivial)"
-  echo "- No code without \`/spec\` approval (non-trivial)"
-  echo "- Tests FIRST — always write test before implementation"
-  echo "- \`.block()\` in \`src/main/\` → CRITICAL, stop and fix immediately"
-  echo "- Never run \`git commit\` — user commits after final review"
-  echo ""
-
-  # TDD reminder
-  echo "### TDD Cycle (Phase ④)"
-  echo ""
-  echo "\`RED\` (write failing test) → \`GREEN\` (minimal impl) → \`REFACTOR\` (clean) → \`/checkpoint\`"
-  echo ""
-
-  # Command cheat sheet
-  echo "### Commands"
-  echo ""
-  echo "| Command | When |"
-  echo "|---------|------|"
-  echo "| \`/plan\` | Non-trivial task — plan before code |"
-  echo "| \`/spec\` | After plan confirmed — spec before code |"
-  echo "| \`/verify\` | After all steps done — gates before review |"
-  echo "| \`/code-review\` | After verify passes — multi-agent review |"
-  echo "| \`/build-fix\` | Build or compile fails |"
-  echo "| \`/checkpoint\` | After each build step completes |"
-  echo "| \`/compact\` | At phase boundaries when context is large |"
-  echo ""
-
-  # Recent session context (if available)
-  if [ -d ".claude/sessions" ]; then
-    LATEST="$(find ".claude/sessions" -maxdepth 1 -name "*-session.md" -mtime -7 2>/dev/null | sort -r | head -1)"
-    if [ -n "$LATEST" ] && [ -f "$LATEST" ]; then
-      echo "### Previous Session Context"
-      echo ""
-      # Output first 40 lines of the latest session (summary section)
-      head -40 "$LATEST"
-      echo ""
-    fi
+# --- Fallback: legacy session context (if structured memory not available) ---
+if [ ! -x "$READ_CONTEXT" ] && [ -d ".claude/sessions" ]; then
+  LATEST="$(find ".claude/sessions" -maxdepth 1 -name "*-session.md" -mtime -7 2>/dev/null | sort -r | head -1)"
+  if [ -n "$LATEST" ] && [ -f "$LATEST" ]; then
+    LEGACY_CTX="$(head -20 "$LATEST" 2>/dev/null || true)"
+    CONTEXT="${CONTEXT}## Previous Session\n\n${LEGACY_CTX}\n"
   fi
+fi
 
-  # Warn if global setup has not been run yet
-  if ! grep -q "devco-agent-skills:start" "$HOME/.claude/CLAUDE.md" 2>/dev/null; then
-    echo ""
-    echo "> ⚠️  **Plugin rules not installed globally**: Run \`/setup\` to write rules into"
-    echo "> \`~/.claude/CLAUDE.md\` so they auto-load in every session across all projects."
-  fi
-} # end stdout → Claude context
+# Output: plain text to stdout (Claude reads as context)
+# The CONTEXT variable uses \n for newlines — expand them
+printf '%b' "$CONTEXT"
 
 # Verbose diagnostics on stderr (terminal only)
 log "Workflow: PLAN → BUILD (TDD) → VERIFY → REVIEW → DELIVER"

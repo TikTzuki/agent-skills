@@ -146,6 +146,12 @@ if [ "$SKIP_PROJECT" = "false" ]; then
     ok "$rule_count rule files installed → $RULES_DST"
     info "Commit .claude/ to version control to share with your team."
   fi
+
+  # 1d. Initialize memory directory
+  if [ -f "$PLUGIN_DIR/scripts/memory/init.sh" ]; then
+    bash "$PLUGIN_DIR/scripts/memory/init.sh" "$PROJECT_ROOT"
+    ok "Memory directory initialized → $CLAUDE_DIR/memory/"
+  fi
 fi
 
 # ---------------------------------------------------------------------------
@@ -180,6 +186,7 @@ echo "  Installed at project scope (all under .claude/):"
 echo "    .claude/CLAUDE.md           — loaded by Claude for this project"
 echo "    .claude/WORKING_WORKFLOW.md — 7-phase workflow reference"
 echo "    .claude/rules/              — coding rules for this project"
+echo "    .claude/memory/             — structured session & knowledge storage"
 if [ "$WITH_GLOBAL" = "true" ]; then
   echo ""
   echo "  Also installed globally:"
@@ -187,7 +194,7 @@ if [ "$WITH_GLOBAL" = "true" ]; then
 fi
 echo ""
 echo "  Add to version control to share with your team:"
-echo "    git add .claude/CLAUDE.md .claude/WORKING_WORKFLOW.md .claude/rules/"
+echo "    git add .claude/CLAUDE.md .claude/WORKING_WORKFLOW.md .claude/rules/ .claude/memory/"
 echo "    git commit -m 'chore: add Claude Code project context'"
 echo ""
 echo "  To refresh after a plugin update:"

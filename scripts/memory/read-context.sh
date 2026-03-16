@@ -1,0 +1,85 @@
+#!/usr/bin/env bash
+# Tiered context retrieval from structured memory
+# Outputs context to stdout for session-start injection
+# Token budget: Tier0 ~50, Tier1 ~200, Tier2 ~500
+set -euo pipefail
+
+PROJECT_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
+MEMORY_DIR="$PROJECT_ROOT/.claude/memory"
+INDEX_FILE="$MEMORY_DIR/sessions/index.json"
+ACTIVE_WORK="$MEMORY_DIR/context/active-work.json"
+
+# Exit silently if memory not initialized
+[ -d "$MEMORY_DIR" ] || exit 0
+
+OUTPUT=""
+
+# --- Tier 0: Session index (~50 tokens) ---
+if [ -f "$INDEX_FILE" ]; then
+  if command -v python3 &>/dev/null; then
+    TIER0="$(python3 -c "
+import json
+try:
+    idx = json.load(open('$INDEX_FILE'))
+    sessions = idx.get('sessions', [])[:5]
+    if sessions:
+        print('Recent sessions:')
+        for s in sessions:
+            print(f\"  - {s.get('date','?')[:10]} [{s.get('branch','?')}] {s.get('summary','')[:80]}\")
+except: pass
+" 2>/dev/null || true)"
+    [ -n "$TIER0" ] && OUTPUT="$TIER0"
+  fi
+fi
+
+# --- Tier 1: Active work context (~200 tokens) ---
+if [ -f "$ACTIVE_WORK" ]; then
+  if command -v python3 &>/dev/null; then
+    TIER1="$(python3 -c "
+import json
+try:
+    work = json.load(open('$ACTIVE_WORK'))
+    task = work.get('current_task', '')
+    if task:
+        print(f'Active task: {task}')
+        for note in work.get('notes', [])[:5]:
+            print(f'  - {note}')
+except: pass
+" 2>/dev/null || true)"
+    [ -n "$TIER1" ] && OUTPUT="$OUTPUT"$'\n'"$TIER1"
+  fi
+fi
+
+# --- Tier 2: Latest session detail (~500 tokens) ---
+if [ -f "$INDEX_FILE" ]; then
+  if command -v python3 &>/dev/null; then
+    LATEST_ID="$(python3 -c "
+import json
+try:
+    idx = json.load(open('$INDEX_FILE'))
+    ss = idx.get('sessions', [])
+    if ss: print(ss[0].get('id',''))
+except: pass
+" 2>/dev/null || true)"
+
+    if [ -n "$LATEST_ID" ]; then
+      LATEST_FILE="$MEMORY_DIR/sessions/${LATEST_ID}.json"
+      if [ -f "$LATEST_FILE" ]; then
+        TIER2="$(python3 -c "
+import json
+try:
+    s = json.load(open('$LATEST_FILE'))
+    print(f\"Last session: {s.get('summary','N/A')}\")
+    print(f\"  Branch: {s.get('branch','?')}, Files: {s.get('files_modified',0)}, Messages: {s.get('user_messages',0)}\")
+except: pass
+" 2>/dev/null || true)"
+        [ -n "$TIER2" ] && OUTPUT="$OUTPUT"$'\n'"$TIER2"
+      fi
+    fi
+  fi
+fi
+
+# Output accumulated context
+if [ -n "$OUTPUT" ]; then
+  echo "$OUTPUT"
+fi

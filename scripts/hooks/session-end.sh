@@ -196,6 +196,52 @@ if [ "$USER_MESSAGES" -eq 0 ]; then
 fi
 
 # ---------------------------------------------------------------------------
+# Git diff summary (meaningful change context even without transcript)
+# ---------------------------------------------------------------------------
+
+DIFF_STAT=""
+if git rev-parse --is-inside-work-tree &>/dev/null; then
+    DIFF_STAT="$(git diff --stat HEAD 2>/dev/null | tail -1 || true)"
+fi
+
+# ---------------------------------------------------------------------------
+# Parse stdin JSON for session metadata (Stop hook passes session data)
+# ---------------------------------------------------------------------------
+
+STDIN_DATA=""
+if [ ! -t 0 ]; then
+    STDIN_DATA="$(cat 2>/dev/null || true)"
+fi
+
+# Extract fields from stdin JSON (if available)
+if [ -n "$STDIN_DATA" ] && command -v python3 &>/dev/null; then
+    STDIN_SESSION_ID="$(echo "$STDIN_DATA" | python3 -c "
+import json, sys
+try:
+    d = json.load(sys.stdin)
+    print(d.get('session_id', d.get('sessionId', '')))
+except: pass
+" 2>/dev/null || true)"
+    STDIN_TRANSCRIPT="$(echo "$STDIN_DATA" | python3 -c "
+import json, sys
+try:
+    d = json.load(sys.stdin)
+    print(d.get('transcript_path', d.get('transcriptPath', '')))
+except: pass
+" 2>/dev/null || true)"
+
+    # Use stdin values as fallback if env vars are empty
+    if [ -z "${CLAUDE_SESSION_ID:-}" ] && [ -n "$STDIN_SESSION_ID" ]; then
+        export CLAUDE_SESSION_ID="$STDIN_SESSION_ID"
+        SHORT_ID="${CLAUDE_SESSION_ID: -6}"
+    fi
+    if [ -z "$TRANSCRIPT_PATH" ] && [ -n "$STDIN_TRANSCRIPT" ] && [ -f "$STDIN_TRANSCRIPT" ]; then
+        TRANSCRIPT_PATH="$STDIN_TRANSCRIPT"
+        log "Transcript found via stdin: $TRANSCRIPT_PATH"
+    fi
+fi
+
+# ---------------------------------------------------------------------------
 # Build session summary text (for claude-mem and Notes)
 # ---------------------------------------------------------------------------
 
@@ -203,6 +249,9 @@ FILE_COUNT="$(echo "$FILES_MODIFIED" | grep -c . 2>/dev/null || echo 0)"
 TEST_COUNT="$(echo "$TESTS_MODIFIED" | grep -c . 2>/dev/null || echo 0)"
 
 SUMMARY_TEXT="Session on ${TODAY} (${BRANCH}): ${USER_MESSAGES} user messages, ${TOOL_CALLS} tool calls, ${FILE_COUNT} files modified, ${TEST_COUNT} tests touched."
+if [ -n "$DIFF_STAT" ]; then
+    SUMMARY_TEXT="${SUMMARY_TEXT} Changes: ${DIFF_STAT}"
+fi
 
 # ---------------------------------------------------------------------------
 # Write session file
@@ -274,6 +323,19 @@ SUMMARY_TEXT="Session on ${TODAY} (${BRANCH}): ${USER_MESSAGES} user messages, $
 } > "$SESSION_FILE"
 
 log "Session file saved: ${SESSION_FILE}"
+
+# Write to structured memory (Phase 1)
+WRITE_SESSION="$(dirname "$0")/../memory/write-session.sh"
+if [ -x "$WRITE_SESSION" ]; then
+    bash "$WRITE_SESSION" \
+        "${TODAY}-${SHORT_ID}" \
+        "$BRANCH" \
+        "$FILE_COUNT" \
+        "$USER_MESSAGES" \
+        "$TOOL_CALLS" \
+        "$SUMMARY_TEXT" 2>/dev/null || true
+    log "Structured session written to .claude/memory/"
+fi
 
 # Write idempotency marker
 echo "$CURRENT_EPOCH" > "$MARKER_FILE"
