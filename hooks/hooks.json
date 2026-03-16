@@ -1,17 +1,14 @@
 {
-  "$schema": "../schemas/hooks.schema.json",
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-start.sh\"",
             "timeout": 30
           }
-        ],
-        "description": "Load previous session context, detect project structure (Maven/Gradle), and restore continuity"
+        ]
       }
     ],
     "PreToolUse": [
@@ -24,8 +21,7 @@
             "timeout": 5,
             "async": true
           }
-        ],
-        "description": "Monitor context window usage and suggest /compact at logical boundaries"
+        ]
       }
     ],
     "PostToolUse": [
@@ -43,13 +39,21 @@
             "timeout": 60,
             "async": true
           }
-        ],
-        "description": "Validate Java compilation and auto-format after file edits"
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/skills/continuous-learning-v2/hooks/observe.sh\"",
+            "timeout": 5,
+            "async": true
+          }
+        ]
       }
     ],
     "PreCompact": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
@@ -57,13 +61,11 @@
             "timeout": 30,
             "async": true
           }
-        ],
-        "description": "Save architectural decisions, current task state, and learnings before context compaction"
+        ]
       }
     ],
     "Stop": [
       {
-        "matcher": "*",
         "hooks": [
           {
             "type": "command",
@@ -81,9 +83,14 @@
             "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-end.sh\"",
             "timeout": 60,
             "async": true
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/evaluate-session.sh\"",
+            "timeout": 15,
+            "async": true
           }
-        ],
-        "description": "Check debug statements, track costs, and persist session state"
+        ]
       }
     ]
   }
