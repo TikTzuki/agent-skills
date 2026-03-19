@@ -82,28 +82,25 @@ PLAN → SPEC → BUILD (TDD) → VERIFY → REVIEW
 ```
 agent-skills/
 ├── CLAUDE.md                          # Project conventions only (~400 tokens)
-├── skills/
-│   ├── bootstrap/SKILL.md            # Enforcement engine (loaded by SessionStart hook)
-│   ├── generic/                      # 10 Java/Spring skills (lazy loaded)
-│   │   ├── spring-patterns/          # MVC + WebFlux + Boot patterns
-│   │   ├── spring-security/          # Auth, JWT, CORS, OWASP
-│   │   ├── database-patterns/        # PostgreSQL, MySQL, JPA, R2DBC, migrations
-│   │   ├── messaging-patterns/       # Kafka + RabbitMQ
-│   │   ├── testing-workflow/         # TDD, blackbox, verification pipeline
-│   │   ├── coding-standards/         # Java 17+ standards + patterns
-│   │   ├── architecture/             # Hexagonal, CQRS, solution design
-│   │   ├── api-design/              # REST conventions, pagination, RFC 7807
-│   │   ├── redis-patterns/          # Caching, locking, Pub/Sub, Streams
-│   │   └── observability-patterns/  # Logging, tracing, metrics, alerting
-│   ├── summer/                       # 6 Summer Framework skills (hard gate: io.f8a.summer)
-│   │   ├── summer-core/             # Version detection, shared types, router
-│   │   ├── summer-rest/             # Handlers, controllers, WebClient
-│   │   ├── summer-data/             # Audit, outbox, R2DBC
-│   │   ├── summer-security/         # APISIX, Keycloak, role sync
-│   │   ├── summer-ratelimit/        # Rate limiting (v0.2.2+)
-│   │   └── summer-test/            # Testcontainers, WireMock, blackbox
-│   └── meta/
-│       └── continuous-learning/     # Pattern extraction (on-demand)
+├── skills/                            # 18 skills (flat, auto-discovered by plugin system)
+│   ├── bootstrap/                    # Enforcement engine (loaded by SessionStart hook)
+│   ├── spring-patterns/              # MVC + WebFlux + Boot patterns
+│   ├── spring-security/              # Auth, JWT, CORS, OWASP
+│   ├── database-patterns/            # PostgreSQL, MySQL, JPA, R2DBC, migrations
+│   ├── messaging-patterns/           # Kafka + RabbitMQ
+│   ├── testing-workflow/             # TDD, blackbox, verification pipeline
+│   ├── coding-standards/             # Java 17+ standards + patterns
+│   ├── architecture/                 # Hexagonal, CQRS, solution design
+│   ├── api-design/                   # REST conventions, pagination, RFC 7807
+│   ├── redis-patterns/               # Caching, locking, Pub/Sub, Streams
+│   ├── observability-patterns/       # Logging, tracing, metrics, alerting
+│   ├── summer-core/                  # Summer: version detection, shared types, router
+│   ├── summer-rest/                  # Summer: handlers, controllers, WebClient
+│   ├── summer-data/                  # Summer: audit, outbox, R2DBC
+│   ├── summer-security/              # Summer: APISIX, Keycloak, role sync
+│   ├── summer-ratelimit/             # Summer: rate limiting (v0.2.2+)
+│   ├── summer-test/                  # Summer: Testcontainers, WireMock, blackbox
+│   └── continuous-learning/          # Meta: pattern extraction (on-demand)
 ├── agents/                           # 8 specialized agents
 │   ├── planner.md                   # Architecture + planning (opus)
 │   ├── spec-writer.md               # Behavioral specs (opus)

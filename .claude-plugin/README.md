@@ -4,7 +4,7 @@ A lightweight, context-efficient Claude Code plugin for **Java Spring** backend 
 
 ## What It Provides
 
-- **18 Skills** — 3-tier organization: 1 bootstrap + 10 generic (Spring/Java) + 6 Summer Framework + 1 meta
+- **18 Skills** — Flat structure: 1 bootstrap + 10 generic (Spring/Java) + 6 Summer Framework + 1 meta
 - **8 Agents** — Planner, spec-writer, implementer, reviewer, build-fixer, test-runner, database-reviewer, refactorer
 - **12 Commands** — `/plan`, `/spec`, `/build`, `/verify`, `/review`, `/setup`, `/status`, `/build-fix`, `/refactor`, `/db-migrate`, `/e2e`, `/meta`
 - **9 Rules** — Flat, ≤500 tokens each: workflow, coding style, architecture, security, testing, observability, git, API design, spec-driven
